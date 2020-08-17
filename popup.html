@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+        <style>
+
+            .item{
+                background-color: #c2e1ff;
+                border-left: 6px solid #2196F3;
+            }
+
+            body{
+                width: 400px;
+                height: 300px;
+            }
+
+            input[type=text]{
+                width: 270px;
+                height: 20px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <img src="amazon.png" width="30" height="30" style="float: left;">
+        <h2>Amazon Notification</h2>
+
+        <div class = "input-group">
+            <input type="text" maxlength="maximum_characters" id="itemURL" name="itemURL" placeholder="Enter URL of item">
+            <button id="changeColor">Add current item</button>
+        </div>
+        
+        <div class = "item">
+            <p><strong>Name</strong> Current price</p>
+            <button id="favoriteItem">Favorite item</button>
+            <button id="removeItem">Remove item</button>
+        </div>
+        
+        <script src="popup.js"></script>
+
+    </body>
+  </html>

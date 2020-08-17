@@ -1,0 +1,21 @@
+{
+    "name": "Amazon Notification",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    "permissions": ["activeTab", "declarativeContent", "storage"],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "page_action": {
+        "default_popup": "popup.html",
+        "default_icon":{
+            "128": "amazon.png"
+        }
+    },
+    "icons":{
+        "128": "amazon.png"
+    },
+    "options_page": "options.html",
+    "manifest_version": 2
+}
