@@ -1,35 +1,36 @@
-var i = 0;
+//TODO: remove button, favorite button, webscraping for prices, making url only accept amazon links, update ui with css
 
-var tempNameArray = [];
-var tempPriceAddedArray = [];
-var tempPriceCurrrentArray = [];
 
+var iCount;
 var nameArray = [];
 var priceAddedArray = [];
 var priceCurrentArray = [];
 
-document.addEventListener('DOMContentLoaded', function(){
+chrome.storage.local.get('count', function(result){
+    iCount = result.count;
+})
 
-    chrome.storage.local.get('names', function(result){
-        tempNameArray = result.names;
-        alert(tempNameArray.length);
-    })
+chrome.storage.local.get('names', function(result){
+    nameArray = result.names;
+})
 
-    chrome.storage.local.get('pricesAdded', function(result){
-        tempPriceAddedArray = result.pricesAdded;
-    })
+chrome.storage.local.get('pricesAdded', function(result){
+    priceAddedArray = result.pricesAdded;
+})
 
-    chrome.storage.local.get('pricesCurrent', function(result){
-        tempPriceCurrentArray = result.pricesCurrent;
-    })
+chrome.storage.local.get('pricesCurrent', function(result){
+    priceCurrentArray = result.pricesCurrent;
+})
 
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const tempNameArray = await new Promise(resolve => chrome.storage.local.get('names', (result) => resolve(result.names)));
+    const tempPriceAddedArray = await new Promise(resolve => chrome.storage.local.get('pricesAdded', (result) => resolve(result.pricesAdded)));
+    const tempPriceCurrentArray = await new Promise(resolve => chrome.storage.local.get('pricesCurrent', (result) => resolve(result.pricesCurrent)));
+    
     if(tempNameArray.length > 0){
-        alert('into if');
-        alert('getting '+tempNameArray[0]);
-        alert(tempNameArray.length);
         for(j=0;j<tempNameArray.length;j++){
-            alert('into for');
-            if(tempNameArray[j]!=null){
+            if(tempNameArray[j]){
                 addtoDOM(tempNameArray[j], tempPriceAddedArray[j], tempPriceCurrentArray[j]);
             }
         }
@@ -38,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
 //read from storage and restore to popup
 function addtoDOM(iName, iPriceAdded, iPriceCurrent){
-    alert('calling addtodom');
 
     var div = document.createElement('div');
     div.style.marginTop = "10px";
@@ -95,15 +95,15 @@ addItem.onclick = function() {
 
         var name = document.createElement('name');
         name.innerHTML = URLValue;
-        nameArray[i] = name.innerHTML;
+        nameArray[iCount] = name.innerHTML;
 
         var priceWhenAdded = document.createElement('priceWhenAdded');
         priceWhenAdded.innerHTML = "50.00";
-        priceAddedArray[i] = priceWhenAdded.innerHTML;
+        priceAddedArray[iCount] = priceWhenAdded.innerHTML;
 
         var priceCurrent = document.createElement('priceCurrent');
         priceCurrent.innerHTML = "30.00";
-        priceCurrentArray[i] = priceCurrent.innerHTML;
+        priceCurrentArray[iCount] = priceCurrent.innerHTML;
 
         var favoriteItem = document.createElement("BUTTON");
         favoriteItem.innerHTML = "Favorite Item";
@@ -129,29 +129,33 @@ addItem.onclick = function() {
         document.body.appendChild(div);
 
         chrome.storage.local.set({'names': nameArray}, function(){
-            //console.log("put into storage");
         })
 
         chrome.storage.local.set({'pricesAdded': priceAddedArray} , function(){
-            //console.log("put into storage");
         })
 
         chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){
-            //console.log("put into storage");
         })
 
-        for(j=0;;j++){
-            if(nameArray[j] == null){
-                i=j;
-                break;
+        alert('test');
+
+        breakPoint:
+        for(j=0;j<nameArray.length+1;j++){
+            if(!nameArray[j]){
+                iCount=j;
+                break breakPoint;
             }
         }
+        
+        alert(iCount);
+
+        chrome.storage.local.set({'count': iCount}, function(){
+        })
     }
 };
 
 storageTest.onclick = function() {
     chrome.storage.local.get('names', function(result) {
-        //alert(result.names);
         for (k=0;k<result.names.length;k++){
             console.log(result.names[k]);
         }
