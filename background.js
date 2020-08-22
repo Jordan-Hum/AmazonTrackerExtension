@@ -1,7 +1,10 @@
-var iCount = 0;
+var iCount = 1;
 var nameArray = [];
 var priceAddedArray = [];
 var priceCurrentArray = [];
+var favoriteArray = [];
+
+nameArray[0]='placeholder';
 
 chrome.storage.local.set({'count': iCount}, function(){
 })
@@ -13,6 +16,9 @@ chrome.storage.local.set({'pricesAdded': priceAddedArray} , function(){
 })
 
 chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){
+})
+
+chrome.storage.local.set({'favorites': favoriteArray} , function(){
 })
 
 chrome.runtime.onInstalled.addListener(function () {

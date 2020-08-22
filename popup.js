@@ -1,10 +1,10 @@
-//TODO: remove button, favorite button, webscraping for prices, making url only accept amazon links, update ui with css
-
+//TODO: webscraping for prices, making url only accept amazon links, update ui with css
 
 var iCount;
 var nameArray = [];
 var priceAddedArray = [];
 var priceCurrentArray = [];
+var favoriteArray = [];
 
 chrome.storage.local.get('count', function(result){
     iCount = result.count;
@@ -22,28 +22,39 @@ chrome.storage.local.get('pricesCurrent', function(result){
     priceCurrentArray = result.pricesCurrent;
 })
 
+chrome.storage.local.get('favorites', function(result){
+    favoriteArray = result.favorites;
+})
+
 document.addEventListener('DOMContentLoaded', async () => {
 
-    const tempNameArray = await new Promise(resolve => chrome.storage.local.get('names', (result) => resolve(result.names)));
-    const tempPriceAddedArray = await new Promise(resolve => chrome.storage.local.get('pricesAdded', (result) => resolve(result.pricesAdded)));
-    const tempPriceCurrentArray = await new Promise(resolve => chrome.storage.local.get('pricesCurrent', (result) => resolve(result.pricesCurrent)));
-    
-    if(tempNameArray.length > 0){
-        for(j=0;j<tempNameArray.length;j++){
-            if(tempNameArray[j]){
-                addtoDOM(tempNameArray[j], tempPriceAddedArray[j], tempPriceCurrentArray[j]);
+    nameArray = await new Promise(resolve => chrome.storage.local.get('names', (result) => resolve(result.names)));
+    priceAddedArray = await new Promise(resolve => chrome.storage.local.get('pricesAdded', (result) => resolve(result.pricesAdded)));
+    priceCurrentArray = await new Promise(resolve => chrome.storage.local.get('pricesCurrent', (result) => resolve(result.pricesCurrent)));
+    favoriteArray = await new Promise(resolve => chrome.storage.local.get('favorites', (result) => resolve(result.favorites)));
+
+    if(nameArray.length >= 1){
+        for(j=1;j<nameArray.length;j++){
+            if(nameArray[j] && favoriteArray[j]==true){
+                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], favoriteArray[j]);
+            }
+        }
+        for(j=1;j<nameArray.length;j++){
+            if(nameArray[j] && favoriteArray[j]==false){
+                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], favoriteArray[j]);
             }
         }
     }
 });
 
 //read from storage and restore to popup
-function addtoDOM(iName, iPriceAdded, iPriceCurrent){
+function addtoDOM(iName, iPriceAdded, iPriceCurrent, iFavorite, divCount){
 
     var div = document.createElement('div');
     div.style.marginTop = "10px";
     div.style.backgroundColor = "#c2e1ff";
     div.style.borderLeft = "6px solid #2196F3";
+    div.className = 'items';
 
     var par = document.createElement("P");
 
@@ -57,16 +68,58 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent){
     priceCurrent.innerHTML = iPriceCurrent;
 
     var favoriteItem = document.createElement("BUTTON");
-    favoriteItem.innerHTML = "Favorite Item";
+    if(iFavorite == true){
+        favoriteItem.innerHTML = "Unfavorite Item";
+    } else if(iFavorite == false){
+        favoriteItem.innerHTML = "Favorite Item";
+    }
+
+    favoriteItem.onclick = function(){
+        var k = nameArray.indexOf(iName);
+        if(iFavorite == true){
+            favoriteArray[k] = false;
+            favoriteItem.innerHTML = 'Favorite Item';
+            chrome.storage.local.set({ 'favorites': favoriteArray }, function () { })
+            document.querySelectorAll('.items').forEach(function(a){
+                a.remove()
+            })
+            var DOMContentLoaded_event = document.createEvent("Event")
+            DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
+            window.document.dispatchEvent(DOMContentLoaded_event)
+
+        } else if (iFavorite == false) {
+            favoriteArray[k] = true;
+            favoriteItem.innerHTML = 'Unfavorite Item';
+            chrome.storage.local.set({ 'favorites': favoriteArray }, function () { })
+            document.querySelectorAll('.items').forEach(function(a){
+                a.remove()
+            })
+            var DOMContentLoaded_event = document.createEvent("Event")
+            DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
+            window.document.dispatchEvent(DOMContentLoaded_event)
+        }
+    }
 
     var removeItem = document.createElement("BUTTON");
     removeItem.innerHTML = "Remove Item";
 
     removeItem.onclick = function(){
         div.remove();
-        chrome.storage.local.remove('names', function(){
-            alert('name removed from storage');
-        });
+
+        var k = nameArray.indexOf(iName);
+
+        nameArray[k] = null;
+        priceAddedArray[k] = null;
+        priceCurrentArray[k] = null;
+        favoriteArray[k] = false;
+        
+        chrome.storage.local.set({'names': nameArray}, function(){})
+
+        chrome.storage.local.set({'pricesAdded': priceAddedArray} , function(){})
+
+        chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){})
+
+        chrome.storage.local.set({'favorites' : favoriteArray}, function(){})
     }
 
     par.appendChild(name);
@@ -90,6 +143,7 @@ addItem.onclick = function() {
         div.style.marginTop = "10px";
         div.style.backgroundColor = "#c2e1ff";
         div.style.borderLeft = "6px solid #2196F3";
+        div.className = 'items';
 
         var par = document.createElement("P");
 
@@ -108,14 +162,53 @@ addItem.onclick = function() {
         var favoriteItem = document.createElement("BUTTON");
         favoriteItem.innerHTML = "Favorite Item";
 
+        favoriteArray[iCount] = false;
+    
+        favoriteItem.onclick = function(){
+            var k = nameArray.indexOf(name.innerHTML);
+            if(favoriteArray[k] == true){
+                favoriteArray[k] = false;
+                favoriteItem.innerHTML = 'Favorite Item';
+                chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
+                document.querySelectorAll('.items').forEach(function(a){
+                    a.remove()
+                })
+                var DOMContentLoaded_event = document.createEvent("Event")
+                DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
+                window.document.dispatchEvent(DOMContentLoaded_event)
+            }else if(favoriteArray[k] ==false){
+                favoriteArray[k] = true;
+                favoriteItem.innerHTML = 'Unfavorite Item';
+                chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
+                document.querySelectorAll('.items').forEach(function(a){
+                    a.remove()
+                })
+                var DOMContentLoaded_event = document.createEvent("Event")
+                DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
+                window.document.dispatchEvent(DOMContentLoaded_event)
+            }
+        }
+
         var removeItem = document.createElement("BUTTON");
         removeItem.innerHTML = "Remove Item";
 
         removeItem.onclick = function(){
             div.remove();
-            chrome.storage.local.remove('names', function(){
-                alert('name removed from storage');
-            });
+
+            var k = nameArray.indexOf(name.innerHTML);
+
+            nameArray[k] = null;
+            priceAddedArray[k] = null;
+            priceCurrentArray[k] = null;
+            favoriteArray[k] = false;
+
+            chrome.storage.local.set({ 'names': nameArray }, function () {})
+
+            chrome.storage.local.set({ 'pricesAdded': priceAddedArray }, function () {})
+
+            chrome.storage.local.set({ 'pricesCurrent': priceCurrentArray }, function () {})
+
+            chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
         }
         
         par.appendChild(name);
@@ -128,20 +221,20 @@ addItem.onclick = function() {
 
         document.body.appendChild(div);
 
-        chrome.storage.local.set({'names': nameArray}, function(){
-        })
+        chrome.storage.local.set({'names': nameArray}, function(){})
 
-        chrome.storage.local.set({'pricesAdded': priceAddedArray} , function(){
-        })
+        chrome.storage.local.set({'pricesAdded': priceAddedArray} , function(){})
 
-        chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){
-        })
+        chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){})
+
+        chrome.storage.local.set({'favorites' : favoriteArray}, function(){})
 
         alert('test');
 
         breakPoint:
-        for(j=0;j<nameArray.length+1;j++){
-            if(!nameArray[j]){
+        for(j=1;j<nameArray.length+1;j++){
+            //if(!nameArray[j]){
+            if(nameArray[j]==null){
                 iCount=j;
                 break breakPoint;
             }
@@ -149,14 +242,13 @@ addItem.onclick = function() {
         
         alert(iCount);
 
-        chrome.storage.local.set({'count': iCount}, function(){
-        })
+        chrome.storage.local.set({'count': iCount}, function(){})
     }
 };
 
 storageTest.onclick = function() {
     chrome.storage.local.get('names', function(result) {
-        for (k=0;k<result.names.length;k++){
+        for (k=1;k<result.names.length;k++){
             console.log(result.names[k]);
         }
     });
@@ -164,4 +256,21 @@ storageTest.onclick = function() {
 
 clearStorage.onclick = function(){
     chrome.storage.local.clear();
+
+    var iCount = 1;
+    var nameArray = [];
+    var priceAddedArray = [];
+    var priceCurrentArray = [];
+
+    nameArray[0]='placeholder';
+
+    chrome.storage.local.set({'count': iCount}, function(){})
+
+    chrome.storage.local.set({'names': nameArray}, function(){})
+
+    chrome.storage.local.set({'pricesAdded': priceAddedArray} , function(){})
+
+    chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){})
+
+    chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
 }
