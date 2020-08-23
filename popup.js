@@ -1,4 +1,4 @@
-//TODO: webscraping for prices, making url only accept amazon links, update ui with css
+//TODO: webscraping for prices, update ui with css
 
 var iCount;
 var nameArray = [];
@@ -127,7 +127,7 @@ addItem.onclick = function() {
 
     var URLValue = document.getElementById('itemURL').value;
 
-    if(URLValue.length > 0){
+    if(URLValue.includes('amazon')){
 
         var div = document.createElement('div');
         div.style.marginTop = "10px";
@@ -219,6 +219,9 @@ addItem.onclick = function() {
         }
 
         chrome.storage.local.set({'count': iCount}, function(){})
+    }
+    else{
+        alert('Not an Amazon link');
     }
 }
 
