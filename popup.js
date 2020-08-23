@@ -80,23 +80,13 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iFavorite, divCount){
             favoriteArray[k] = false;
             favoriteItem.innerHTML = 'Favorite Item';
             chrome.storage.local.set({ 'favorites': favoriteArray }, function () { })
-            document.querySelectorAll('.items').forEach(function(a){
-                a.remove()
-            })
-            var DOMContentLoaded_event = document.createEvent("Event")
-            DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
-            window.document.dispatchEvent(DOMContentLoaded_event)
+            refreshPopup();
 
         } else if (iFavorite == false) {
             favoriteArray[k] = true;
             favoriteItem.innerHTML = 'Unfavorite Item';
             chrome.storage.local.set({ 'favorites': favoriteArray }, function () { })
-            document.querySelectorAll('.items').forEach(function(a){
-                a.remove()
-            })
-            var DOMContentLoaded_event = document.createEvent("Event")
-            DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
-            window.document.dispatchEvent(DOMContentLoaded_event)
+            refreshPopup();
         }
     }
 
@@ -170,23 +160,13 @@ addItem.onclick = function() {
                 favoriteArray[k] = false;
                 favoriteItem.innerHTML = 'Favorite Item';
                 chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
-                document.querySelectorAll('.items').forEach(function(a){
-                    a.remove()
-                })
-                var DOMContentLoaded_event = document.createEvent("Event")
-                DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
-                window.document.dispatchEvent(DOMContentLoaded_event)
+                refreshPopup();
             }else if(favoriteArray[k] ==false){
                 favoriteArray[k] = true;
                 favoriteItem.innerHTML = 'Unfavorite Item';
                 chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
-                document.querySelectorAll('.items').forEach(function(a){
-                    a.remove()
-                })
-                var DOMContentLoaded_event = document.createEvent("Event")
-                DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
-                window.document.dispatchEvent(DOMContentLoaded_event)
-            }
+                refreshPopup();
+            }   
         }
 
         var removeItem = document.createElement("BUTTON");
@@ -229,8 +209,6 @@ addItem.onclick = function() {
 
         chrome.storage.local.set({'favorites' : favoriteArray}, function(){})
 
-        alert('test');
-
         breakPoint:
         for(j=1;j<nameArray.length+1;j++){
             //if(!nameArray[j]){
@@ -239,12 +217,10 @@ addItem.onclick = function() {
                 break breakPoint;
             }
         }
-        
-        alert(iCount);
 
         chrome.storage.local.set({'count': iCount}, function(){})
     }
-};
+}
 
 storageTest.onclick = function() {
     chrome.storage.local.get('names', function(result) {
@@ -273,4 +249,13 @@ clearStorage.onclick = function(){
     chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){})
 
     chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
+}
+
+function refreshPopup(){
+    document.querySelectorAll('.items').forEach(function(a){
+        a.remove()
+    })
+    var DOMContentLoaded_event = document.createEvent("Event");
+    DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true);
+    window.document.dispatchEvent(DOMContentLoaded_event);
 }
