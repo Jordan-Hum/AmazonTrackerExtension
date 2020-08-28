@@ -1,29 +1,40 @@
 {
+    "manifest_version": 2,
+
     "name": "Amazon Notification",
-    "version": "1.0",
+
     "description": "Build an Extension!",
-    "permissions": ["activeTab", "declarativeContent", "storage", "tabs"],
-    "background": {
-        "scripts": ["background.js"],
-        "persistent": false
-    },
+
+    "version": "1.0",
+    
     "page_action": {
+        "default_title": "Amazon Notifications",
         "default_popup": "popup.html",
         "default_icon":{
             "128": "amazon.png"
         }
     },
+
     "icons":{
         "128": "amazon.png"
     },
-    "options_page": "options.html",
-    "manifest_version": 2,
+
+    "background": {
+        "scripts": ["background.js"]
+    },
+
     "content_scripts": [
         {
-            "matches": ["http://amazon.ca/*", "http://amazon.com/*"],
+            "matches":["http://www.amazon.ca/*", "http://www.amazon.com/*","https://www.amazon.ca/*", "https://www.amazon.com/*"],
+            "js":["content.js"],
             "run_at": "document_idle",
-            "js": ["content.js"]
+            "all_frames": false
         }
-    ]
+    ],
     
+    "permissions": [
+        "activeTab",
+        "storage", 
+        "tabs"
+    ]
 }
