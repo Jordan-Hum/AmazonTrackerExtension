@@ -12,6 +12,9 @@ var productTitle;
 var productPrice;
 var productAvailability;
 
+var newProductPrice;
+var newProductAvailability;
+
 chrome.tabs.query(
 	{active: true, 
 	currentWindow: true},
@@ -64,24 +67,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     priceCurrentArray = await new Promise(resolve => chrome.storage.local.get('pricesCurrent', (result) => resolve(result.pricesCurrent)));
     availabilityArray = await new Promise(resolve => chrome.storage.local.get('availability', (result) => resolve(result.availability)));
     favoriteArray = await new Promise(resolve => chrome.storage.local.get('favorites', (result) => resolve(result.favorites)));
+    urlArray = await new Promise(resolve => chrome.storage.local.get('urls', (result) => resolve(result.urls)));
 
     if(nameArray.length >= 1){
 
         for(j=1;j<nameArray.length;j++){
             if(nameArray[j] && favoriteArray[j]==true){
-                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j]);
+                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j], urlArray[j]);
             }
         }
         for(j=1;j<nameArray.length;j++){
             if(nameArray[j] && favoriteArray[j]==false){
-                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j]);
+                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j], urlArray[j]);
             }
         }
     }
 });
 
 //read from storage and restore to popup
-function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite){
+function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, iURL){
 
     var div = document.createElement('div');
     div.style.marginTop = "10px";
@@ -108,8 +112,27 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite){
     checkItem.innerHTML = "Check Item";
 
     checkItem.onclick = function() {
-        alert('test check');
+        chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
+            let tabIndex = tabs[0].index;
+            chrome.tabs.create({ url: iURL, active : false, index:tabIndex+1 });
+            chrome.tabs.onUpdated.addListener(function (updatedTabID , changeInfo, updatedTab) {
+                if (changeInfo.status === 'complete' ) {
+                    chrome.tabs.sendMessage(updatedTabID, 
+                        {from: 'popup',
+                            subject: 'getNewData'}, 
+                        insertNewData);
+                    alert(newProductPrice);
+                    chrome.tabs.remove(updatedTabID);
+                }
+              });
+        })
     }
+
+    function insertNewData(data){
+        newProductPrice = data.newPrice;
+        newProductAvailability = data.newAvailability;
+    }
+    
 
     var favoriteItem = document.createElement("BUTTON");
     if(iFavorite == true){
@@ -218,7 +241,7 @@ addCurrent.onclick = function(){
         
         if(!urlArray.includes(url)){
 
-            addtoDOM(productTitle, productPrice, productPrice, productAvailability, false);
+            addtoDOM(productTitle, productPrice, productPrice, productAvailability, false, url);
             
             nameArray[iCount] = productTitle;
             
