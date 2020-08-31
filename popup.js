@@ -1,4 +1,4 @@
-//TODO: webscraping for prices, update ui with html & css, add quick links to parts of site, add link to item, make check item work
+//TODO: update ui with html & css, add quick links to parts of site, add link to item, add color to availability, check all button, fix check item button(checks all)
 
 var iCount;
 var nameArray = [];
@@ -14,6 +14,8 @@ var productAvailability;
 
 var newProductPrice;
 var newProductAvailability;
+
+var tabID;
 
 chrome.tabs.query(
 	{active: true, 
@@ -105,24 +107,27 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     var priceWhenAdded = document.createElement('priceWhenAdded');
     priceWhenAdded.innerHTML = iPriceAdded + "  ";
 
+    var currentPriceText = document.createElement('currentPriceText');
+    currentPriceText.innerHTML = "Current Price: ";
+
     var priceCurrent = document.createElement('priceCurrent');
-    priceCurrent.innerHTML = "Current Price: " + iPriceCurrent + "  ";
+    priceCurrent.innerHTML = iPriceCurrent + "  ";
 
     var checkItem = document.createElement("BUTTON");
     checkItem.innerHTML = "Check Item";
+
 
     checkItem.onclick = function() {
         chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
             let tabIndex = tabs[0].index;
             chrome.tabs.create({ url: iURL, active : false, index:tabIndex+1 });
             chrome.tabs.onUpdated.addListener(function (updatedTabID , changeInfo, updatedTab) {
+                tabID = updatedTabID;
                 if (changeInfo.status === 'complete' ) {
                     chrome.tabs.sendMessage(updatedTabID, 
                         {from: 'popup',
                             subject: 'getNewData'}, 
                         insertNewData);
-                    alert(newProductPrice);
-                    chrome.tabs.remove(updatedTabID);
                 }
               });
         })
@@ -131,6 +136,25 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     function insertNewData(data){
         newProductPrice = data.newPrice;
         newProductAvailability = data.newAvailability;
+        let priceNew = newProductPrice.substring(5);
+        let pricePrevious = priceCurrent.innerHTML.substring(10);
+        parseInt(priceNew);
+        parseInt(pricePrevious);
+        let priceDiff = pricePrevious - priceNew;
+        parseInt(priceDiff);
+        alert(priceNew);
+        alert(pricePrevious);
+        alert(priceDiff);
+        if(priceDiff < 0){
+            priceCurrent.style.color = "#ff0000";
+        } else if (priceDiff > 0){
+            priceCurrent.style.color = "#00cc00";
+        }
+        priceCurrent.innerHTML = newProductPrice + "  ";
+        var k = nameArray.indexOf(iName);
+        priceCurrentArray[k] = newProductPrice;
+        chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){})
+        chrome.tabs.remove(tabID);
     }
     
 
@@ -187,6 +211,7 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
 
     par1.appendChild(name);
     //par.appendChild(priceWhenAdded); implement later
+    par2.appendChild(currentPriceText);
     par2.appendChild(priceCurrent);
     par2.appendChild(availability);
 
@@ -197,40 +222,6 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     div.appendChild(removeItem);
 
     document.body.appendChild(div);
-}
-
-storageTest.onclick = function() {
-    chrome.storage.local.get('names', function(result) {
-        for (k=1;k<result.names.length;k++){
-            console.log(result.names[k]);
-        }
-    });
-}
-
-clearStorage.onclick = function(){
-    chrome.storage.local.clear();
-
-    var iCount = 1;
-    var nameArray = [];
-    var priceAddedArray = [];
-    var priceCurrentArray = [];
-    var urlArray = [];
-
-    nameArray[0]='placeholder';
-
-    chrome.storage.local.set({'count': iCount}, function(){})
-
-    chrome.storage.local.set({'names': nameArray}, function(){})
-
-    chrome.storage.local.set({'pricesAdded': priceAddedArray} , function(){})
-
-    chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){})
-
-    chrome.storage.local.set({'favorites' : favoriteArray}, function() {})
-    
-    chrome.storage.local.set({'urls' : urlArray}, function() {})
-
-    chrome.storage.local.set({'availability' : availabilityArray}, function() {})
 }
 
 addCurrent.onclick = function(){
@@ -282,11 +273,6 @@ addCurrent.onclick = function(){
             alert('Item already added');
         }
     });
-}
-
-testButton.onclick = function(){  
-    //var newURL = "http://www.amazon.com/";
-    //chrome.tabs.create({ url: newURL });
 }
 
 function refreshPopup(){
