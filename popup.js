@@ -1,4 +1,5 @@
-//TODO: update ui with html & css, add quick links to parts of site, add link to item, add color to availability, check all button, fix check item button(checks all)
+//TODO: update ui with html & css, check all button, add comments
+//fix check item button(checks all), clicking one check item changes the text for the next items, but not the previous ones
 
 var iCount;
 var nameArray = [];
@@ -64,6 +65,13 @@ chrome.storage.local.get('availability', function(result){
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+    chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
+        let url = tabs[0].url;
+        if (!url.includes("amazon")){
+            addCurrent.disabled = true;
+        }
+    })
+
     nameArray = await new Promise(resolve => chrome.storage.local.get('names', (result) => resolve(result.names)));
     priceAddedArray = await new Promise(resolve => chrome.storage.local.get('pricesAdded', (result) => resolve(result.pricesAdded)));
     priceCurrentArray = await new Promise(resolve => chrome.storage.local.get('pricesCurrent', (result) => resolve(result.pricesCurrent)));
@@ -99,10 +107,13 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     var par2 = document.createElement("P");
 
     var name = document.createElement('name');
-    name.innerHTML = iName + "  ";
+    name.innerHTML = iName;
+
+    var availabilityText = document.createElement('availabilityText');
+    availabilityText.innerHTML = "Availability: ";
 
     var availability = document.createElement('availability');
-    availability.innerHTML = "Availability: " + iAvailability;
+    availability.innerHTML = iAvailability;
 
     var priceWhenAdded = document.createElement('priceWhenAdded');
     priceWhenAdded.innerHTML = iPriceAdded + "  ";
@@ -113,9 +124,15 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     var priceCurrent = document.createElement('priceCurrent');
     priceCurrent.innerHTML = iPriceCurrent + "  ";
 
+    var viewItem = document.createElement("BUTTON");
+    viewItem.innerHTML = "View Item";
+
+    viewItem.onclick = function(){
+        chrome.tabs.create({ url: iURL, active : true});
+    }
+
     var checkItem = document.createElement("BUTTON");
     checkItem.innerHTML = "Check Item";
-
 
     checkItem.onclick = function() {
         chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
@@ -136,20 +153,32 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     function insertNewData(data){
         newProductPrice = data.newPrice;
         newProductAvailability = data.newAvailability;
+
         let priceNew = newProductPrice.substring(5);
         let pricePrevious = priceCurrent.innerHTML.substring(10);
         parseInt(priceNew);
         parseInt(pricePrevious);
         let priceDiff = pricePrevious - priceNew;
         parseInt(priceDiff);
-        alert(priceNew);
-        alert(pricePrevious);
-        alert(priceDiff);
+
+        //alert(priceNew);
+        //alert(pricePrevious);
+        //alert(priceDiff);
+
         if(priceDiff < 0){
             priceCurrent.style.color = "#ff0000";
         } else if (priceDiff > 0){
             priceCurrent.style.color = "#00cc00";
         }
+        
+        if(newProductAvailability == "In Stock."){
+            availability.style.color = "#00cc00";
+        } else if (newProductAvailability == "Currently Unavailable." || newProductAvailability == "Temporarily Out of Stock."){
+            availability.style.color = "#ff0000";
+        } else {
+            availability.style.color = "#ffff00";
+        }
+
         priceCurrent.innerHTML = newProductPrice + "  ";
         var k = nameArray.indexOf(iName);
         priceCurrentArray[k] = newProductPrice;
@@ -213,10 +242,12 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     //par.appendChild(priceWhenAdded); implement later
     par2.appendChild(currentPriceText);
     par2.appendChild(priceCurrent);
+    par2.appendChild(availabilityText);
     par2.appendChild(availability);
 
     div.appendChild(par1);
     div.appendChild(par2);
+    div.appendChild(viewItem);
     div.appendChild(checkItem);
     div.appendChild(favoriteItem);
     div.appendChild(removeItem);
@@ -229,7 +260,7 @@ addCurrent.onclick = function(){
     chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
 
         let url = tabs[0].url;
-        
+
         if(!urlArray.includes(url)){
 
             addtoDOM(productTitle, productPrice, productPrice, productAvailability, false, url);
@@ -282,4 +313,37 @@ function refreshPopup(){
     var DOMContentLoaded_event = document.createEvent("Event");
     DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true);
     window.document.dispatchEvent(DOMContentLoaded_event);
+}
+
+document.getElementById("links").onchange = goToLink;
+
+function goToLink(){
+    switch(document.getElementById('links').value){
+        case "goto":
+            break;
+        case "home":
+            chrome.tabs.create({ url: "https://www.amazon.ca/", active : true});
+            break;
+        case "account":
+            chrome.tabs.create({ url: "https://www.amazon.ca/gp/css/homepage.html?ref_=nav_AccountFlyout_ya", active : true});
+            break;
+        case "orders":
+            chrome.tabs.create({ url: "https://www.amazon.ca/gp/your-account/order-history?ref_=ya_d_c_yo", active : true});
+            break;
+        case "cart":
+            chrome.tabs.create({ url: "https://www.amazon.ca/gp/cart/view.html?ref_=nav_cart", active : true});
+            break;
+        case "deals":
+            chrome.tabs.create({ url: "https://www.amazon.ca/gp/goldbox?ref_=nav_cs_gb", active : true});
+            break;
+        case "bestsellers":
+            chrome.tabs.create({ url: "https://www.amazon.ca/Best-Sellers-generic/zgbs/?ref_=nav_cs_bestsellers", active : true});
+            break;
+        case "releases":
+            chrome.tabs.create({ url: "https://www.amazon.ca/gp/new-releases/?ref_=nav_cs_newreleases", active : true});
+            break;
+        case "service":
+            chrome.tabs.create({ url: "https://www.amazon.ca/gp/help/customer/display.html?ref_=nav_cs_help", active : true});
+            break;
+    }
 }
