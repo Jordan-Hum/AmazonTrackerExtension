@@ -1,5 +1,4 @@
-//TODO: update ui with html & css, check all button, add comments
-//fix check item button(checks all), clicking one check item changes the text for the next items, but not the previous ones
+//TODO: fix check item button(checks all), clicking one check item changes the text for the next items, but not the previous ones
 
 //declare variables
 
