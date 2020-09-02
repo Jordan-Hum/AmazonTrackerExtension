@@ -1,22 +1,24 @@
 {
     "manifest_version": 2,
 
-    "name": "Amazon Notification",
-
-    "description": "Build an Extension!",
-
-    "version": "1.0",
+    "name": "Amazon Notifications",
     
+    "author": "Jordan Hum & Caleb Lim",
+    
+    "version": "1.0",
+
+    "description": "Google Chrome Extension to keep track of Amazon prices and availabilities",
+
+    "icons":{
+        "128": "amazon.png"
+    },
+
     "page_action": {
         "default_title": "Amazon Notifications",
         "default_popup": "popup.html",
         "default_icon":{
             "128": "amazon.png"
         }
-    },
-
-    "icons":{
-        "128": "amazon.png"
     },
 
     "background": {

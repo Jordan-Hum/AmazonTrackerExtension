@@ -1,6 +1,8 @@
 //TODO: update ui with html & css, check all button, add comments
 //fix check item button(checks all), clicking one check item changes the text for the next items, but not the previous ones
 
+//declare variables
+
 var iCount;
 var nameArray = [];
 var priceAddedArray = [];
@@ -18,6 +20,9 @@ var newProductAvailability;
 
 var tabID;
 
+//get data from the current page by sending a message to content.js
+//calls the insertData function
+
 chrome.tabs.query(
 	{active: true, 
 	currentWindow: true},
@@ -27,13 +32,17 @@ chrome.tabs.query(
 	     subject: 'getData'}, 
 		insertData);
         }
-	);
+);
+    
+//update variables with data from the current page
 
 function insertData(data){
     productTitle = data.title;
     productPrice = data.price;
     productAvailability = data.availability;
 }
+
+//get values and arrays from storage
 
 chrome.storage.local.get('count', function(result){
     iCount = result.count;
@@ -63,8 +72,12 @@ chrome.storage.local.get('availability', function(result){
     availabilityArray = result.availability;
 })
 
+//the DOMContentLoaded event fires when the HTML document of the popup has been completely loaded
+
 document.addEventListener('DOMContentLoaded', async () => {
 
+    //disables the addCurrent button if the url of the current page does not include amazon
+    
     chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
         let url = tabs[0].url;
         if (!url.includes("amazon")){
@@ -72,12 +85,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     })
 
+    //get values from storage asynchronously so that we can load the items in storage
+    
     nameArray = await new Promise(resolve => chrome.storage.local.get('names', (result) => resolve(result.names)));
     priceAddedArray = await new Promise(resolve => chrome.storage.local.get('pricesAdded', (result) => resolve(result.pricesAdded)));
     priceCurrentArray = await new Promise(resolve => chrome.storage.local.get('pricesCurrent', (result) => resolve(result.pricesCurrent)));
     availabilityArray = await new Promise(resolve => chrome.storage.local.get('availability', (result) => resolve(result.availability)));
     favoriteArray = await new Promise(resolve => chrome.storage.local.get('favorites', (result) => resolve(result.favorites)));
     urlArray = await new Promise(resolve => chrome.storage.local.get('urls', (result) => resolve(result.urls)));
+
+    //display all the items from storage starting with the favorited items
 
     if(nameArray.length >= 1){
 
@@ -94,9 +111,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-//read from storage and restore to popup
+//this method displays the item in the popup with the given information
+
 function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, iURL){
 
+    //initialize the div and pars of each item
+    
     var div = document.createElement('div');
     div.style.marginTop = "10px";
     div.style.backgroundColor = "#c2e1ff";
@@ -105,6 +125,8 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
 
     var par1 = document.createElement("P");
     var par2 = document.createElement("P");
+    
+    //initialize all the text variables of each element
 
     var name = document.createElement('name');
     name.innerHTML = iName;
@@ -123,6 +145,8 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
 
     var priceCurrent = document.createElement('priceCurrent');
     priceCurrent.innerHTML = iPriceCurrent + "  ";
+    
+    //adds view item button that brings the user to the page of the item when clicked
 
     var viewItem = document.createElement("BUTTON");
     viewItem.innerHTML = "View Item";
@@ -130,6 +154,10 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     viewItem.onclick = function(){
         chrome.tabs.create({ url: iURL, active : true});
     }
+
+    //adds check item button that opens the item in a new tab to check for changes in prices and availability
+    //and it updates the information in the popup
+    //sends a message to content.js and calls the insertNewData() function
 
     var checkItem = document.createElement("BUTTON");
     checkItem.innerHTML = "Check Item";
@@ -150,10 +178,15 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         })
     }
 
+    //updates the information
+
     function insertNewData(data){
+        
         newProductPrice = data.newPrice;
         newProductAvailability = data.newAvailability;
 
+        //parse the values obtained to remove unneeded information and check if the new price is lower or higher than the previous one
+        
         let priceNew = newProductPrice.substring(5);
         let pricePrevious = priceCurrent.innerHTML.substring(10);
         parseInt(priceNew);
@@ -165,17 +198,21 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         //alert(pricePrevious);
         //alert(priceDiff);
 
+        //change the color of the price according to the new price
+        
         if(priceDiff < 0){
-            priceCurrent.style.color = "#ff0000";
+            priceCurrent.style.color = "#ff0000";   //if new price is lower, set text to red
         } else if (priceDiff > 0){
-            priceCurrent.style.color = "#00cc00";
+            priceCurrent.style.color = "#00cc00";   //if new price is higher, set text to green
         }
         
-        if(newProductAvailability == "In Stock."){
-            availability.style.color = "#00cc00";
-        } else if (newProductAvailability == "Currently Unavailable." || newProductAvailability == "Temporarily Out of Stock."){
+        //change the color of the availability according to the new availability
+        
+        if(newProductAvailability == "In Stock."){  //if item is in stock, set text to green
+            availability.style.color = "#00cc00";   
+        } else if (newProductAvailability == "Currently Unavailable." || newProductAvailability == "Temporarily Out of Stock."){    //if item is out of stock, set text to red
             availability.style.color = "#ff0000";
-        } else {
+        } else {                                    //else, set text to yellow
             availability.style.color = "#ffff00";
         }
 
@@ -186,6 +223,7 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         chrome.tabs.remove(tabID);
     }
     
+    //adds favorite button, allows the favorite button to display the correct text depending on whether the user has favorited the item or not
 
     var favoriteItem = document.createElement("BUTTON");
     if(iFavorite == true){
@@ -194,6 +232,9 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         favoriteItem.innerHTML = "Favorite Item";
     }
 
+    //adds functionality to the favorite button, sets the appropriate index in the favorite of true/false depending on its status and refresh the popup
+    //to allow favorite to be put on top of the list 
+    
     favoriteItem.onclick = function(){
         var k = nameArray.indexOf(iName);
         if(iFavorite == true){
@@ -210,8 +251,12 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         }
     }
 
+    //adds remove button
+    
     var removeItem = document.createElement("BUTTON");
     removeItem.innerHTML = "Remove Item";
+
+    //adds functionality to the remove button, sets all appropriate arrays to null or false to remove item from the array and sets them in the storage
 
     removeItem.onclick = function(){
         div.remove();
@@ -238,12 +283,16 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         chrome.storage.local.set({'availability' : availabilityArray}, function() {})
     }
 
+    //adds the name, price, availability to the list for each item in the list
+
     par1.appendChild(name);
-    //par.appendChild(priceWhenAdded); implement later
+    //par.appendChild(priceWhenAdded); TODO****
     par2.appendChild(currentPriceText);
     par2.appendChild(priceCurrent);
     par2.appendChild(availabilityText);
     par2.appendChild(availability);
+
+    //adds button for view Item, check Item, favorite Item and remove Item for each item in the list
 
     div.appendChild(par1);
     div.appendChild(par2);
@@ -255,15 +304,23 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     document.body.appendChild(div);
 }
 
+//adds functionality to the Add Current Item button, allows users to add the item to the list with the name, price, availability 
+
 addCurrent.onclick = function(){
 
     chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
 
         let url = tabs[0].url;
 
+        //checks if the item has already been added to the list
+
         if(!urlArray.includes(url)){
 
+            //calls addtoDom method which allows elements to be added to the popup
+            
             addtoDOM(productTitle, productPrice, productPrice, productAvailability, false, url);
+            
+            //adds corresponding information to the correct array and sets the arrays in storage
             
             nameArray[iCount] = productTitle;
             
@@ -289,6 +346,8 @@ addCurrent.onclick = function(){
 
             chrome.storage.local.set({'availability' : availabilityArray}, function(){})
 
+            //finds the next available spot in the arrays
+
             breakPoint:
             for(j=1;j<nameArray.length+1;j++){
                 //if(!nameArray[j]){
@@ -306,6 +365,8 @@ addCurrent.onclick = function(){
     });
 }
 
+//allows the popup to refresh itself by removing all items and readding them
+
 function refreshPopup(){
     document.querySelectorAll('.items').forEach(function(a){
         a.remove();
@@ -314,6 +375,9 @@ function refreshPopup(){
     DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true);
     window.document.dispatchEvent(DOMContentLoaded_event);
 }
+
+
+//allows users to quickly navigate to frequent pages on amazon.ca using the dropdown menu
 
 document.getElementById("links").onchange = goToLink;
 
