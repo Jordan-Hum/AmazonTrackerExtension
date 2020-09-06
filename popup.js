@@ -14,9 +14,6 @@ var productTitle;
 var productPrice;
 var productAvailability;
 
-var newProductPrice;
-var newProductAvailability;
-
 var tabID;
 
 //get data from the current page by sending a message to content.js
@@ -99,12 +96,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         for(j=1;j<nameArray.length;j++){
             if(nameArray[j] && favoriteArray[j]==true){
-                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j], urlArray[j]);
+                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j], urlArray[j], j);
             }
         }
         for(j=1;j<nameArray.length;j++){
             if(nameArray[j] && favoriteArray[j]==false){
-                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j], urlArray[j]);
+                addtoDOM(nameArray[j], priceAddedArray[j], priceCurrentArray[j], availabilityArray[j], favoriteArray[j], urlArray[j], j);
             }
         }
     }
@@ -112,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 //this method displays the item in the popup with the given information
 
-function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, iURL){
+function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, iURL, count){
 
     //initialize the div and pars of each item
     
@@ -129,12 +126,14 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
 
     var name = document.createElement('name');
     name.innerHTML = iName;
+    name.id = 'name-'+ count;
 
     var availabilityText = document.createElement('availabilityText');
     availabilityText.innerHTML = "Availability: ";
 
     var availability = document.createElement('availability');
     availability.innerHTML = iAvailability;
+    availability.id = 'availability-' + count;
 
     var priceWhenAdded = document.createElement('priceWhenAdded');
     priceWhenAdded.innerHTML = iPriceAdded + "  ";
@@ -144,6 +143,7 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
 
     var priceCurrent = document.createElement('priceCurrent');
     priceCurrent.innerHTML = iPriceCurrent + "  ";
+    priceCurrent.id = 'priceCurrent-' + count;
     
     //adds view item button that brings the user to the page of the item when clicked
 
@@ -180,9 +180,15 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     //updates the information
 
     function insertNewData(data){
-        
-        newProductPrice = data.newPrice;
-        newProductAvailability = data.newAvailability;
+
+        alert(iName);
+        var k = nameArray.indexOf(iName);
+        alert(k);
+        console.log(nameArray);
+        console.log(k);
+
+        let newProductPrice = data.newPrice;
+        let newProductAvailability = data.newAvailability;
 
         //parse the values obtained to remove unneeded information and check if the new price is lower or higher than the previous one
         
@@ -200,25 +206,29 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         //change the color of the price according to the new price
         
         if(priceDiff < 0){
-            priceCurrent.style.color = "#ff0000";   //if new price is lower, set text to red
+            document.getElementById('priceCurrent-'+k).style.color = "#ff0000";   //if new price is lower, set text to red
         } else if (priceDiff > 0){
-            priceCurrent.style.color = "#00cc00";   //if new price is higher, set text to green
+            document.getElementById('priceCurrent-'+k).style.color = "#00cc00";   //if new price is higher, set text to green
         }
         
         //change the color of the availability according to the new availability
         
         if(newProductAvailability == "In Stock."){  //if item is in stock, set text to green
-            availability.style.color = "#00cc00";   
+            document.getElementById('availability-'+k).style.color = "#00cc00";   
         } else if (newProductAvailability == "Currently Unavailable." || newProductAvailability == "Temporarily Out of Stock."){    //if item is out of stock, set text to red
-            availability.style.color = "#ff0000";
+            document.getElementById('availability-'+k).style.color = "#ff0000";
         } else {                                    //else, set text to yellow
-            availability.style.color = "#ffff00";
+            document.getElementById('availability-'+k).style.color = "#ffff00";
         }
 
-        priceCurrent.innerHTML = newProductPrice + "  ";
-        var k = nameArray.indexOf(iName);
+        document.getElementById('priceCurrent-'+k).innerHTML = newProductPrice + "  ";
         priceCurrentArray[k] = newProductPrice;
-        chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){})
+        chrome.storage.local.set({'pricesCurrent': priceCurrentArray} , function(){});
+
+        document.getElementById('availability-'+k).innerHTML = newProductAvailability + "  ";
+        availabilityArray[k] = newProductAvailability;
+        chrome.storage.local.set({'availability': availabilityArray} , function(){});
+        
         chrome.tabs.remove(tabID);
     }
     
@@ -282,6 +292,16 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
         chrome.storage.local.set({'availability' : availabilityArray}, function() {})
     }
 
+    var testItem = document.createElement("BUTTON");
+    testItem.innerHTML = "Test";
+
+    testItem.onclick = function(){
+
+        var k = nameArray.indexOf(iName);
+
+        alert(document.getElementById('name-'+ k).innerHTML);
+    }
+
     //adds the name, price, availability to the list for each item in the list
 
     par1.appendChild(name);
@@ -299,6 +319,7 @@ function addtoDOM(iName, iPriceAdded, iPriceCurrent, iAvailability, iFavorite, i
     div.appendChild(checkItem);
     div.appendChild(favoriteItem);
     div.appendChild(removeItem);
+    div.appendChild(testItem);
 
     document.body.appendChild(div);
 }
@@ -317,7 +338,7 @@ addCurrent.onclick = function(){
 
             //calls addtoDom method which allows elements to be added to the popup
             
-            addtoDOM(productTitle, productPrice, productPrice, productAvailability, false, url);
+            addtoDOM(productTitle, productPrice, productPrice, productAvailability, false, url, iCount);
             
             //adds corresponding information to the correct array and sets the arrays in storage
             
