@@ -1,4 +1,4 @@
-//TODO: fix check item button(checks all), clicking one check item changes the text for the next items, but not the previous ones
+//TODO: fix check item button(checks all)
 
 //declare variables
 
@@ -13,6 +13,8 @@ var availabilityArray = [];
 var productTitle;
 var productPrice;
 var productAvailability;
+
+var amazonSite;
 
 var tabID;
 
@@ -89,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     availabilityArray = await new Promise(resolve => chrome.storage.local.get('availability', (result) => resolve(result.availability)));
     favoriteArray = await new Promise(resolve => chrome.storage.local.get('favorites', (result) => resolve(result.favorites)));
     urlArray = await new Promise(resolve => chrome.storage.local.get('urls', (result) => resolve(result.urls)));
-
+    
     //display all the items from storage starting with the favorited items
 
     if(nameArray.length >= 1){
@@ -105,6 +107,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     }
+
+    //get the amazon site selected previously and select it
+
+    amazonSite = await new Promise(resolve => chrome.storage.local.get('amazonSite', (result) => resolve(result.amazonSite)));
+
+    if(amazonSite == "amazonca"){
+        document.getElementById('amazonca').checked = true;
+    } else if(amazonSite == "amazoncom") {
+        document.getElementById('amazoncom').checked = true;
+    }
+    
 });
 
 //this method displays the item in the popup with the given information
@@ -400,33 +413,86 @@ function refreshPopup(){
 document.getElementById("links").onchange = goToLink;
 
 function goToLink(){
-    switch(document.getElementById('links').value){
-        case "goto":
-            break;
-        case "home":
-            chrome.tabs.create({ url: "https://www.amazon.ca/", active : true});
-            break;
-        case "account":
-            chrome.tabs.create({ url: "https://www.amazon.ca/gp/css/homepage.html?ref_=nav_AccountFlyout_ya", active : true});
-            break;
-        case "orders":
-            chrome.tabs.create({ url: "https://www.amazon.ca/gp/your-account/order-history?ref_=ya_d_c_yo", active : true});
-            break;
-        case "cart":
-            chrome.tabs.create({ url: "https://www.amazon.ca/gp/cart/view.html?ref_=nav_cart", active : true});
-            break;
-        case "deals":
-            chrome.tabs.create({ url: "https://www.amazon.ca/gp/goldbox?ref_=nav_cs_gb", active : true});
-            break;
-        case "bestsellers":
-            chrome.tabs.create({ url: "https://www.amazon.ca/Best-Sellers-generic/zgbs/?ref_=nav_cs_bestsellers", active : true});
-            break;
-        case "releases":
-            chrome.tabs.create({ url: "https://www.amazon.ca/gp/new-releases/?ref_=nav_cs_newreleases", active : true});
-            break;
-        case "service":
-            chrome.tabs.create({ url: "https://www.amazon.ca/gp/help/customer/display.html?ref_=nav_cs_help", active : true});
-            break;
+
+    if(document.getElementById('amazonca').checked) {
+
+        switch(document.getElementById('links').value){
+            case "goto":
+                break;
+            case "home":
+                chrome.tabs.create({ url: "https://www.amazon.ca/", active : true});
+                break;
+            case "account":
+                chrome.tabs.create({ url: "https://www.amazon.ca/gp/css/homepage.html?ref_=nav_AccountFlyout_ya", active : true});
+                break;
+            case "orders":
+                chrome.tabs.create({ url: "https://www.amazon.ca/gp/your-account/order-history?ref_=ya_d_c_yo", active : true});
+                break;
+            case "cart":
+                chrome.tabs.create({ url: "https://www.amazon.ca/gp/cart/view.html?ref_=nav_cart", active : true});
+                break;
+            case "deals":
+                chrome.tabs.create({ url: "https://www.amazon.ca/gp/goldbox?ref_=nav_cs_gb", active : true});
+                break;
+            case "bestsellers":
+                chrome.tabs.create({ url: "https://www.amazon.ca/Best-Sellers-generic/zgbs/?ref_=nav_cs_bestsellers", active : true});
+                break;
+            case "releases":
+                chrome.tabs.create({ url: "https://www.amazon.ca/gp/new-releases/?ref_=nav_cs_newreleases", active : true});
+                break;
+            case "service":
+                chrome.tabs.create({ url: "https://www.amazon.ca/gp/help/customer/display.html?ref_=nav_cs_help", active : true});
+                break;
+        }
+
+    } else if(document.getElementById('amazoncom').checked) {
+
+        switch(document.getElementById('links').value){
+            case "goto":
+                break;
+            case "home":
+                chrome.tabs.create({ url: "https://www.amazon.com/", active : true});
+                break;
+            case "account":
+                chrome.tabs.create({ url: "https://www.amazon.com/gp/css/homepage.html?ref_=nav_AccountFlyout_ya", active : true});
+                break;
+            case "orders":
+                chrome.tabs.create({ url: "https://www.amazon.com/gp/your-account/order-history?ref_=ya_d_c_yo", active : true});
+                break;
+            case "cart":
+                chrome.tabs.create({ url: "https://www.amazon.com/gp/cart/view.html?ref_=nav_cart", active : true});
+                break;
+            case "deals":
+                chrome.tabs.create({ url: "https://www.amazon.com/gp/goldbox?ref_=nav_cs_gb", active : true});
+                break;
+            case "bestsellers":
+                chrome.tabs.create({ url: "https://www.amazon.com/Best-Sellers-generic/zgbs/?ref_=nav_cs_bestsellers", active : true});
+                break;
+            case "releases":
+                chrome.tabs.create({ url: "https://www.amazon.com/gp/new-releases/?ref_=nav_cs_newreleases", active : true});
+                break;
+            case "service":
+                chrome.tabs.create({ url: "https://www.amazon.com/gp/help/customer/display.html?ref_=nav_cs_help", active : true});
+                break;
+        }
+    } else {
+        alert("error");
     }
 }
 
+//shows popup form to allow user to select preferred amazon region
+
+selectAmazon.onclick = function(){
+    document.getElementById("myForm").style.display = "block";
+}
+
+//closes the popup to save the selection selected by the user 
+
+closeButton.onclick = function(){
+    document.getElementById("myForm").style.display = "none";
+    if(document.getElementById("amazonca").checked) {
+        chrome.storage.local.set({ 'amazonSite': "amazonca" }, function () {});
+    } else if (document.getElementById("amazoncom").checked) {
+        chrome.storage.local.set({ 'amazonSite': "amazoncom" }, function () {});
+    }
+}

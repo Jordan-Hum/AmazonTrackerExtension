@@ -16,6 +16,15 @@
                 height: 20px;
             }
 
+            /* The popup form - hidden by default */
+            .form-popup {
+                display: none;
+                position: fixed;
+                border: 1px solid #000000;
+                z-index: 1000;
+                background-color: #FFFFFF;
+            }
+
         </style>
         
     </head>
@@ -35,7 +44,23 @@
             <option value="bestsellers">Best Sellers</option>
             <option value="releases">New Releases</option>
             <option value="service">Customer Service</option>
-        </select></p>
+        </select>
+
+        <button type='button', id="selectAmazon">Select Amazon Region</button>
+        
+        <div class = "form-popup" id = "myForm">
+            <form action = "/action_page.php" class = "form-container">
+                <h2>Select Amazon Site</h2>
+                    <input type="radio" id="amazonca" name="amazonLinks" value="amazonca" checked>
+                    <label for="amazonca">Amazon.ca</label><br>
+                    <input type="radio" id="amazoncom" name="amazonLinks" value="amazoncom">
+                    <label for="amazoncom">Amazon.com</label><br>
+                    <button type='button', id="closeButton"> Close </button>
+            </form>
+
+        </div>
+        
+        </p>
 
         <button type='button', id="addCurrent">Add Current Item</button>
 
