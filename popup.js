@@ -35,9 +35,13 @@ chrome.tabs.query(
 //update variables with data from the current page
 
 function insertData(data){
-    productTitle = data.title;
-    productPrice = data.price;
-    productAvailability = data.availability;
+    if(chrome.runtime.lastError){
+        alert("Error");
+    } else {
+        productTitle = data.title;
+        productPrice = data.price;
+        productAvailability = data.availability;
+    }
 }
 
 //get values and arrays from storage
@@ -393,6 +397,7 @@ addCurrent.onclick = function(){
         } else {
             alert('Item already added');
         }
+        
     });
 }
 

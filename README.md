@@ -12,8 +12,8 @@ This is a Google Extension that allows users to keep track of items which they w
 
 ## Future Updates
 - Changes in price and availability will be checked periodically, without opening a new tab, and alerts the user
-- Have a settings button for the user to switch between different amazon sites to update the quick links
 - Send the user an error message if the item added is undefined or if there is a port error
+- Try to get picture of product from amazon page and add hyperlink to the product page 
 - Update the user interface
 
 ## Contributors

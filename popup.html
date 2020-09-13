@@ -16,6 +16,22 @@
                 height: 20px;
             }
 
+            .logoName {
+                background-color:#131921;
+                width: 400px;
+                height: 40px;
+                display: inline-block;
+                line-height: 8px;
+
+            }
+
+            .optionArea {
+                background-color: #232f3e;
+                width: 400px;
+                height: 70px;
+                display: inline-block;
+            }
+
             /* The popup form - hidden by default */
             .form-popup {
                 display: none;
@@ -29,40 +45,51 @@
         
     </head>
 
-    <body>
+    <body style = "margin: 0;">
 
-        <img src="amazon.png" width="30" height="30" style="float: left;">
-        <h2>Amazon Notification</h2>
-
-        <p><select name="links" id="links">
-            <option value="goto" disabled selected hidden>Go To Page...</option>
-            <option value="home">Home Page</option>
-            <option value="account">Your Account</option>
-            <option value="orders">Your Orders</option>
-            <option value="cart">Your Cart</option>
-            <option value="deals">Deals Store</option>
-            <option value="bestsellers">Best Sellers</option>
-            <option value="releases">New Releases</option>
-            <option value="service">Customer Service</option>
-        </select>
-
-        <button type='button', id="selectAmazon">Select Amazon Region</button>
-        
-        <div class = "form-popup" id = "myForm">
-            <form action = "/action_page.php" class = "form-container">
-                <h2>Select Amazon Site</h2>
-                    <input type="radio" id="amazonca" name="amazonLinks" value="amazonca" checked>
-                    <label for="amazonca">Amazon.ca</label><br>
-                    <input type="radio" id="amazoncom" name="amazonLinks" value="amazoncom">
-                    <label for="amazoncom">Amazon.com</label><br>
-                    <button type='button', id="closeButton"> Close </button>
-            </form>
+        <div class = "logoName">
+            
+            <div style = "position: relative; top: 4px; left: 1px;">
+                <img src="amazon.png" width="30" height="30" style="float: left; margin-right: 5px">
+            </div>
+            <h2 style = "color: #FFFFFF; font-family: inherit">Amazon Notification</h2>
 
         </div>
         
-        </p>
+        <div class = "optionArea">
 
-        <button type='button', id="addCurrent">Add Current Item</button>
+            <p><select name="links" id="links">
+                <option value="goto" disabled selected hidden>Go To Page...</option>
+                <option value="home">Home Page</option>
+                <option value="account">Your Account</option>
+                <option value="orders">Your Orders</option>
+                <option value="cart">Your Cart</option>
+                <option value="deals">Deals Store</option>
+                <option value="bestsellers">Best Sellers</option>
+                <option value="releases">New Releases</option>
+                <option value="service">Customer Service</option>
+            </select>
+
+            <button type='button', id="selectAmazon", background-color="transparent">
+                <img src="settings.png" width="20" height="20">
+            </button>
+            
+            <div class = "form-popup" id = "myForm">
+                <form action = "/action_page.php" class = "form-container">
+                    <h2>Select Amazon Site</h2>
+                        <input type="radio" id="amazonca" name="amazonLinks" value="amazonca" checked>
+                        <label for="amazonca">Amazon.ca</label><br>
+                        <input type="radio" id="amazoncom" name="amazonLinks" value="amazoncom">
+                        <label for="amazoncom">Amazon.com</label><br>
+                        <button type='button', id="closeButton"> Close </button>
+                </form>
+            </div>
+        
+            </p>
+    
+            <button type='button', id="addCurrent">Add Current Item</button>
+
+        </div>
 
         <script src="popup.js"></script>
 
